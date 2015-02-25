@@ -83,9 +83,15 @@
 (defvar drag-stuff-after-drag-hook nil
   "Called after dragging occurs.")
 
+<<<<<<< HEAD
 (defun drag-stuff--evil-p ()
   "Predicate for checking if we're in evil visual state."
   (and (bound-and-true-p evil-mode) (evil-visual-state-p)))
+=======
+(make-variable-buffer-local
+ (defvar drag-stuff-by-symbol-p nil
+   "If non-nil, drag by symbols instead of words with left/right."))
+>>>>>>> by-symbol
 
 (defun drag-stuff--kbd (key)
   "Key binding helper."
@@ -268,6 +274,14 @@
   "Drags word right ARG times."
   (drag-stuff-word-horizontally arg))
 
+(defun drag-stuff-symbol-left (arg)
+  "Drags symbol left ARG times"
+  (drag-stuff-symbol-horizontally (- arg)))
+
+(defun drag-stuff-symbol-right (arg)
+  "Drags word right ARG times."
+  (drag-stuff-symbol-horizontally arg))
+
 (defun drag-stuff-word-horizontally (arg)
   "Drags word horizontally ARG times."
   (let ((old-point (point))
@@ -275,6 +289,24 @@
     (condition-case err
         (progn
           (transpose-words arg)
+          (backward-char offset))
+      (error
+       (message
+        (if (> arg 0)
+            "Can not move word further to the right"
+          "Can not move word further to the left"))
+       (goto-char old-point)))))
+
+(defun drag-stuff-symbol-horizontally (arg)
+  "Drags word horizontally ARG times."
+  (let ((old-point (point))
+        (offset (- (save-excursion
+                     (forward-symbol 1)
+                     (point))
+                   (point))))
+    (condition-case err
+        (progn
+          (transpose-subr 'forward-symbol arg)
           (backward-char offset))
       (error
        (message
